@@ -1,9 +1,20 @@
-﻿namespace ImageSegmentation;
+using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
 
-class Program
+namespace ImageTemplate
 {
-    static void Main(string[] args)
+    static class Program
     {
-        Console.WriteLine("Hello, World!");
+        /// <summary>
+        /// The main entry point for the application.
+        /// </summary>
+        [STAThread]
+        static void Main()
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new MainForm());
+        }
     }
 }
