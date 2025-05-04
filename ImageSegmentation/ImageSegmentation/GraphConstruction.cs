@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 namespace ImageTemplate
 {
     class GraphConstruction
-    {
-            public Dictionary<byte, List<byte>> Redgraph = new Dictionary<byte, List<byte>>();
-            public Dictionary<byte, List<byte>> Greengraph = new Dictionary<byte, List<byte>>();
-            public Dictionary<byte, List<byte>> Bluegraph = new Dictionary<byte, List<byte>>();
+{
+    public Dictionary<byte, List<byte>> Redgraph = new Dictionary<byte, List<byte>>();
+    public Dictionary<byte, List<byte>> Greengraph = new Dictionary<byte, List<byte>>();
+    public Dictionary<byte, List<byte>> Bluegraph = new Dictionary<byte, List<byte>>();
    
 
     public void AdjacencyList(RGBPixel[,] img )
