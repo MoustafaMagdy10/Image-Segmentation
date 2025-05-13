@@ -32,78 +32,54 @@ namespace ImageTemplate
                 Console.WriteLine(ImageMatrix.ToString());
             }
 
-            var st =new HashSet<int>();
-            for(int i= 0; i<ImageMatrix.GetLength(0); i++)
-            {
-                for(int j= 0; j < ImageMatrix.GetLength(1); j++)
-                {
+            //var st =new HashSet<int>();
+            //for(int i= 0; i<ImageMatrix.GetLength(0); i++)
+            //{
+            //    for(int j= 0; j < ImageMatrix.GetLength(1); j++)
+            //    {
 
-                  st.Add(ImageMatrix[i, j].red);
+            //      st.Add(ImageMatrix[i, j].red);
                     
 
-                }
-            }
-            foreach(var i in st)
-            {
-                Debug.WriteLine(i);
-            }
+            //    }
+            //}
+            //foreach(var i in st)
+            //{
+            //    Debug.WriteLine(i);
+            //}
             txtWidth.Text = ImageOperations.GetWidth(ImageMatrix).ToString();
             txtHeight.Text = ImageOperations.GetHeight(ImageMatrix).ToString();
         }
 
-        private RGBPixel[,] BitmapToRGBPixel(Bitmap bmp)
-        {
-            int w = bmp.Width;
-            int h = bmp.Height;
-            var mat = new RGBPixel[h, w];
-            for (int y = 0; y < h; y++)
-                for (int x = 0; x < w; x++)
-                {
-                    var c = bmp.GetPixel(x, y);
-                    mat[y, x].red = c.R;
-                    mat[y, x].green = c.G;
-                    mat[y, x].blue = c.B;
-                }
-            return mat;
-        }
         private void btnGaussSmooth_Click(object sender, EventArgs e)
         {
             double sigma = double.Parse(txtGaussSigma.Text);
             int maskSize = (int)nudMaskSize.Value ;
-            //ImageMatrix = ImageOperations.GaussianFilter1D(ImageMatrix, maskSize, sigma);
+            ImageMatrix = ImageOperations.GaussianFilter1D(ImageMatrix, maskSize, sigma);
 
 
-
-            /* <---debuging---> */
-            //var st = new HashSet<int>();
-            //for (int i = 0; i < ImageMatrix.GetLength(0); i++)
-            //{
-            //    for (int j = 0; j < ImageMatrix.GetLength(1); j++)
-            //    {
-
-            //        st.Add(ImageMatrix[i, j].red);
+            Stopwatch timer = Stopwatch.StartNew();
 
 
-            //    }
-            //}
-            //foreach (var i in st)
-            //{
-            //    Debug.WriteLine(i);
-            //}
-
-
-            var segmenter = new Segmenter(ImageMatrix, 300);
+            var segmenter = new Segmenter(ImageMatrix, 30000);
             int[,] leaders = segmenter.RunColor();
 
             var ImageMatrix2 = segmenter.Colorize(leaders);
 
+            var (count, sizes) = segmenter.GetStats(leaders);
+            timer.Stop();
+
+            long time = timer.ElapsedMilliseconds;
+
+            Debug.WriteLine("TIME:" + time);
+
 
             ImageOperations.DisplayImage(ImageMatrix2, pictureBox2);
 
-            var (count, sizes) = segmentter.GetStats(leaders);
+            
+            //put the path you like , like this @"C:\Downloads"
 
-            //put the path you like , like this @"C:\.."
-            string outputPath = Path.Combine(Application.StartupPath, "output.txt");
+            string outputPath = @"C:\Users\moust\source\repos\Image-Segmentation\ImageSegmentation\ImageSegmentation\MyOutput.txt";
 
             using (var sw = new StreamWriter(outputPath, false))
             {

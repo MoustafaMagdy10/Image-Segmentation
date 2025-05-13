@@ -13,9 +13,10 @@ namespace ImageTemplate
         private readonly RGBPixel[,] img;
         private readonly int width;
         private readonly int height;
-        private readonly double k;
+        private readonly long k;
+        
 
-        public Segmenter(RGBPixel[,] image, double kValue)
+        public Segmenter(RGBPixel[,] image, long kValue)
         {
             img = image;
             height = ImageOperations.GetHeight(image);
@@ -25,8 +26,9 @@ namespace ImageTemplate
 
         private int[,] RunMonoChannel(Func<RGBPixel, byte> selector)
         {
+            
             int total = width * height;
-            var edges = GraphBuilder.BuildEdges(img, selector);
+            var edges = GraphBuilder.BuildEdges(img,selector);
             edges.Sort((a, b) => a.Weight.CompareTo(b.Weight));
             var dsu = new DisjointSet(total);
             foreach (var e in edges)
@@ -38,35 +40,47 @@ namespace ImageTemplate
                 double ta = k / dsu.GetSize(a);
                 double tb = k / dsu.GetSize(b);
                 double ma = dsu.InternalDiff(a) + ta;
-                double mb = dsu.InternalDiff(b) + tb;
+                double mb =dsu.InternalDiff(b) + tb;
 
-                if (e.Weight <= Math.Min(ma, mb))
+                if (e.Weight <=Math.Min(ma, mb))
                 {
                     dsu.Union(a, b, e.Weight);
                 }
+
             }
 
              var leaders = new int[height, width];
-            for (int y = 0; y < height; y++)
+
+            Parallel.For(0, height, y =>
+            {
                 for (int x = 0; x < width; x++)
                 {
                     int id = y * width + x;
                     leaders[y, x] = dsu.FindLeader(id);
                 }
+            });
             return leaders;
         }
         int comp;
         public int[,] RunColor()
         {
             // Segmentation on R, G, B
-            var lr = RunMonoChannel(p => p.red);
-            var lg = RunMonoChannel(p => p.green);
-            var lb = RunMonoChannel(p => p.blue);
+            int[,] lr = null, lg = null, lb = null;
+            var sw = Stopwatch.StartNew();
+            
+            Parallel.Invoke(
+                () => { lr = RunMonoChannel(p => p.red); },
+                () => { lg = RunMonoChannel(p => p.green); },
+                () => { lb = RunMonoChannel(p => p.blue); }
+            );
 
+            sw.Stop();
+            //var l = RunCombinedRGB();
             int total = width * height;
             var finalDsu = new DisjointSet(total);
-            int[] dx = { -1, 0, 1, 0, -1, -1, 1, 1 };
-            int[] dy = { 0, -1, 0, 1, -1, 1, -1, 1 };
+            
+            int[] dx = { 1, 1, -1, -1, 0, 1, 0, -1 };
+            int[] dy = { 1, -1, 1, -1, 1, 0, -1, 0 };
 
             for (int y = 0; y < height; y++)
             {
@@ -85,9 +99,16 @@ namespace ImageTemplate
                         {
                             finalDsu.Union(id, nid, 0);
                         }
+
+                        //if (l[y, x] == l[ny, nx])
+                        //{
+                        //    finalDsu.Union(id, nid, 0);
+                        //}
                     }
                 }
             }
+
+            
 
             var finalLeaders = new int[height, width];
             for (int y = 0; y < height; y++)

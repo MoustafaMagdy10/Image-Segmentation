@@ -13,7 +13,7 @@ namespace ImageTemplate
         {
             int height = ImageOperations.GetHeight(img);
             int width = ImageOperations.GetWidth(img);
-            var edges = new List<Edge>(height * width * 8);
+            var edges = new List<Edge>(height * width *4 );
 
             int[] dx = { -1, -1, -1, 0, 0, 1, 1, 1 };
             int[] dy = { -1, 0, 1, -1, 1, -1, 0, 1 };
@@ -32,7 +32,11 @@ namespace ImageTemplate
                         if (nx < 0 || ny < 0 || nx >= width || ny >= height)
                             continue;
 
+
+
                         int node2 = ny * width + nx;
+
+                        if (node2 < node) continue;
                         byte color2 = channelSelector(img[ny, nx]);
                         int weight = Math.Abs(color - color2);
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ImageTemplate
 {
-    internal class Edge
+    struct Edge
     {
         public int U, V;
         public int Weight;

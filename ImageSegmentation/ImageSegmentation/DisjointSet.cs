@@ -15,10 +15,10 @@ namespace ImageTemplate
         public DisjointSet(int n)
         {
             componants = n;
-            parent = new int[n+9];
-            groupSize = new int[n+9];
-            internalDiff = new double[n+9];
-            for (int i = 0; i <= n; i++)
+            parent = new int[n];
+            groupSize = new int[n];
+            internalDiff = new double[n];
+            for (int i = 0; i < n; i++)
             {
                 parent[i] = i;
                 groupSize[i] = 1;
