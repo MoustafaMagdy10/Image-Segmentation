@@ -32,21 +32,6 @@ namespace ImageTemplate
                 Console.WriteLine(ImageMatrix.ToString());
             }
 
-            //var st =new HashSet<int>();
-            //for(int i= 0; i<ImageMatrix.GetLength(0); i++)
-            //{
-            //    for(int j= 0; j < ImageMatrix.GetLength(1); j++)
-            //    {
-
-            //      st.Add(ImageMatrix[i, j].red);
-                    
-
-            //    }
-            //}
-            //foreach(var i in st)
-            //{
-            //    Debug.WriteLine(i);
-            //}
             txtWidth.Text = ImageOperations.GetWidth(ImageMatrix).ToString();
             txtHeight.Text = ImageOperations.GetHeight(ImageMatrix).ToString();
         }
@@ -76,7 +61,7 @@ namespace ImageTemplate
 
             ImageOperations.DisplayImage(ImageMatrix2, pictureBox2);
 
-            
+
             //put the path you like , like this @"C:\Downloads"
 
             string outputPath = @"C:\Users\moust\source\repos\Image-Segmentation\ImageSegmentation\ImageSegmentation\MyOutput.txt";
@@ -89,6 +74,26 @@ namespace ImageTemplate
                     sw.WriteLine(s);
             }
 
+            string outputImagePath = @"C:\Users\moust\source\repos\Image-Segmentation\ImageSegmentation\ImageSegmentation\SegmentedOutput.png";
+            SaveRGBPixelArrayAsImage(ImageMatrix2, outputImagePath);
+        }
+        private void SaveRGBPixelArrayAsImage(RGBPixel[,] imageMatrix, string filePath)
+        {
+            int height = imageMatrix.GetLength(0);
+            int width = imageMatrix.GetLength(1);
+            Bitmap bmp = new Bitmap(width, height);
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    RGBPixel pixel = imageMatrix[y, x];
+                    Color color = Color.FromArgb(pixel.red, pixel.green, pixel.blue);
+                    bmp.SetPixel(x, y, color);
+                }
+            }
+
+            bmp.Save(filePath, System.Drawing.Imaging.ImageFormat.Png);
         }
 
         private void MainForm_Load(object sender, EventArgs e)

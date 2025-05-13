@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -111,12 +112,16 @@ namespace ImageTemplate
             
 
             var finalLeaders = new int[height, width];
-            for (int y = 0; y < height; y++)
+            //var leaders = new int[height, width];
+
+            Parallel.For(0, height, y =>
+            {
                 for (int x = 0; x < width; x++)
                 {
                     int id = y * width + x;
-                    finalLeaders[y, x] = finalDsu.FindLeader(id);
+                    finalLeaders[y, x] =finalDsu.FindLeader(id);
                 }
+            });
             return finalLeaders;
         }
         public RGBPixel[,] Colorize(int[,] leaders)
