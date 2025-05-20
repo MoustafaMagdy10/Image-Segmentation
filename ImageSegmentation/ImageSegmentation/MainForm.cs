@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -74,28 +75,16 @@ namespace ImageTemplate
                     sw.WriteLine(s);
             }
 
-            string outputImagePath = @"C:\Users\moust\source\repos\Image-Segmentation\ImageSegmentation\ImageSegmentation\SegmentedOutput.png";
-            SaveRGBPixelArrayAsImage(ImageMatrix2, outputImagePath);
-        }
-        private void SaveRGBPixelArrayAsImage(RGBPixel[,] imageMatrix, string filePath)
-        {
-            int height = imageMatrix.GetLength(0);
-            int width = imageMatrix.GetLength(1);
-            Bitmap bmp = new Bitmap(width, height);
-
-            for (int y = 0; y < height; y++)
+            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+            saveFileDialog1.Filter = "bmp files (*.bmp)|*.bmp|All files (*.*)|*.*";
+            saveFileDialog1.RestoreDirectory = true;
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                for (int x = 0; x < width; x++)
-                {
-                    RGBPixel pixel = imageMatrix[y, x];
-                    Color color = Color.FromArgb(pixel.red, pixel.green, pixel.blue);
-                    bmp.SetPixel(x, y, color);
-                }
+                pictureBox2.Image.Save(saveFileDialog1.FileName, ImageFormat.Bmp);
             }
 
-            bmp.Save(filePath, System.Drawing.Imaging.ImageFormat.Png);
         }
-
+ 
         private void MainForm_Load(object sender, EventArgs e)
         {
 
