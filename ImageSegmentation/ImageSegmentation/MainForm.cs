@@ -20,11 +20,7 @@ namespace ImageTemplate
         private int[,] leaders;
         private Dictionary<int, List<Point>> segmentPixels;
         private HashSet<int> selectedLabels;
-        private Bitmap originalImage;
-        private bool selecting = true;
         private bool isMerging = false;
-        private HashSet<int> mergedLabels = new HashSet<int>();
-        private RGBPixel[,] originalImageMatrix;
         private RGBPixel[,] colorizedSegments;
 
         public MainForm()
@@ -48,17 +44,7 @@ namespace ImageTemplate
         }
 
         RGBPixel[,] ImageMatrix;
-        private Bitmap RGBPixelToBitmap(RGBPixel[,] matrix)
-        {
-            int height = matrix.GetLength(0);
-            int width = matrix.GetLength(1);
-            Bitmap bmp = new Bitmap(width, height);
-            for (int y = 0; y < height; y++)
-                for (int x = 0; x < width; x++)
-                    bmp.SetPixel(x, y, Color.FromArgb(matrix[y, x].red, matrix[y, x].green, matrix[y, x].blue));
-            return bmp;
-        }
-
+       
         private void btnOpen_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
@@ -88,17 +74,9 @@ namespace ImageTemplate
 
             var segmenter = new Segmenter(ImageMatrix, 35000);
             leaders = segmenter.RunColor();
-            originalImageMatrix = ImageMatrix;
-            originalImage = RGBPixelToBitmap(originalImageMatrix);
-
             colorizedSegments = segmenter.Colorize(leaders);
 
-            isMerging = false;
-            Button3.Text = "Merge Segments";
-            mergedLabels.Clear();
-            segmentPixels.Clear();
-            selectedLabels.Clear();
-            
+        
             var (count, sizes) = segmenter.GetStats(leaders);
             timer.Stop();
 
@@ -106,6 +84,11 @@ namespace ImageTemplate
 
             Debug.WriteLine("TIME:" + time);
             MessageBox.Show("Code Executed in " + time + " :MS");
+
+            isMerging = false;
+            Button3.Text = "Merge Segments";
+            segmentPixels.Clear();
+            selectedLabels.Clear();
 
             PopulateSegmentPixels();
 
@@ -178,8 +161,8 @@ namespace ImageTemplate
         public RGBPixel[,] ColorizeSelected(int[,] leaders, HashSet<int> selectedLabels)
         {
            
-            int h = originalImageMatrix.GetLength(0);
-            int w = originalImageMatrix.GetLength(1);
+            int h = ImageMatrix.GetLength(0);
+            int w = ImageMatrix.GetLength(1);
 
 
 
@@ -192,9 +175,9 @@ namespace ImageTemplate
                     if (selectedLabels.Contains(leaders[y, x]))
                     {
 
-                        mat[y, x].red = originalImageMatrix[y, x].red;
-                        mat[y, x].green = originalImageMatrix[y, x].green;
-                        mat[y, x].blue = originalImageMatrix[y, x].blue;
+                        mat[y, x].red = ImageMatrix[y, x].red;
+                        mat[y, x].green = ImageMatrix[y, x].green;
+                        mat[y, x].blue = ImageMatrix[y, x].blue;
                     }
                     else
                     {
@@ -212,11 +195,11 @@ namespace ImageTemplate
 
         private void pictureBox2_MouseClick(object sender, MouseEventArgs e)
         {
-            if (!isMerging || originalImageMatrix == null || leaders == null)
+            if (!isMerging || ImageMatrix == null || leaders == null)
                 return;
 
-            int imgX = (int)((double)e.X / pictureBox2.Width * originalImage.Width);
-            int imgY = (int)((double)e.Y / pictureBox2.Height * originalImage.Height);
+            int imgX = (int)((double)e.X / pictureBox2.Width * ImageMatrix.GetLength(1));
+            int imgY = (int)((double)e.Y / pictureBox2.Height * ImageMatrix.GetLength(0));
 
             if (imgX < 0 || imgX >= leaders.GetLength(1) ||
                 imgY < 0 || imgY >= leaders.GetLength(0)) return;
