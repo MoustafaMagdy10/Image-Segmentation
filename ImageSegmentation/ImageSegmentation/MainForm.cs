@@ -97,7 +97,7 @@ namespace ImageTemplate
             
             //put the path you like , like this @"C:\Downloads"
 
-            string outputPath = @"C:\Users\moust\source\repos\Image-Segmentation\ImageSegmentation\ImageSegmentation\MyOutput.txt";
+            string outputPath = AppContext.BaseDirectory;
 
             using (var sw = new StreamWriter(outputPath, false))
             {
