@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,6 +17,20 @@ namespace ImageTemplate
         public MainForm()
         {
             InitializeComponent();
+            this.WindowState = FormWindowState.Normal;
+
+
+            pictureBox1.Dock = DockStyle.Fill;
+            pictureBox2.Dock = DockStyle.Fill;
+
+            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBox2.SizeMode = PictureBoxSizeMode.Zoom;
+
+          
+
+
+
+
         }
 
         RGBPixel[,] ImageMatrix;
@@ -46,12 +61,12 @@ namespace ImageTemplate
             Stopwatch timer = Stopwatch.StartNew();
 
 
-            var segmenter = new Segmenter(ImageMatrix, 30000);
-            int[,] leaders = segmenter.RunColor();
+            var segmenter = new Segmenter(ImageMatrix, 30000); //O(1)
+            int[,] leaders = segmenter.RunColor(); // N Log N
 
-            var ImageMatrix2 = segmenter.Colorize(leaders);
+            var ImageMatrix2 = segmenter.Colorize(leaders); // O(N)
 
-            var (count, sizes) = segmenter.GetStats(leaders);
+            var (count, sizes) = segmenter.GetStats(leaders); // O(n + s log s)
             timer.Stop();
 
             long time = timer.ElapsedMilliseconds;
@@ -62,11 +77,11 @@ namespace ImageTemplate
             ImageOperations.DisplayImage(ImageMatrix2, pictureBox2);
 
 
-            //put the path you like , like this @"C:\Downloads"
+            
 
-            string outputPath = @"C:\Users\moust\source\repos\Image-Segmentation\ImageSegmentation\ImageSegmentation\MyOutput.txt";
+            string outputPath = @"D:\Algorithims project\Image-Segmentation\ImageSegmentation\ImageSegmentation\MyOutput.txt";
 
-            using (var sw = new StreamWriter(outputPath, false))
+            using (var sw = new StreamWriter(outputPath, false)) // O(leaders) ;
             {
                 sw.WriteLine(count);
 
@@ -74,27 +89,18 @@ namespace ImageTemplate
                     sw.WriteLine(s);
             }
 
-            string outputImagePath = @"C:\Users\moust\source\repos\Image-Segmentation\ImageSegmentation\ImageSegmentation\SegmentedOutput.png";
-            SaveRGBPixelArrayAsImage(ImageMatrix2, outputImagePath);
-        }
-        private void SaveRGBPixelArrayAsImage(RGBPixel[,] imageMatrix, string filePath)
-        {
-            int height = imageMatrix.GetLength(0);
-            int width = imageMatrix.GetLength(1);
-            Bitmap bmp = new Bitmap(width, height);
 
-            for (int y = 0; y < height; y++)
+            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+            saveFileDialog1.Filter = "bmp files (*.bmp)|*.bmp|All files (*.*)|*.*";
+            saveFileDialog1.RestoreDirectory = true;
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                for (int x = 0; x < width; x++)
-                {
-                    RGBPixel pixel = imageMatrix[y, x];
-                    Color color = Color.FromArgb(pixel.red, pixel.green, pixel.blue);
-                    bmp.SetPixel(x, y, color);
-                }
+                pictureBox2.Image.Save(saveFileDialog1.FileName, ImageFormat.Bmp);
             }
 
-            bmp.Save(filePath, System.Drawing.Imaging.ImageFormat.Png);
+
         }
+     
 
         private void MainForm_Load(object sender, EventArgs e)
         {
