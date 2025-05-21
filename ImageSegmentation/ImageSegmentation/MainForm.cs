@@ -26,15 +26,23 @@ namespace ImageTemplate
         private HashSet<int> mergedLabels = new HashSet<int>();
         private RGBPixel[,] originalImageMatrix;
         private RGBPixel[,] colorizedSegments;
-        private Bitmap currentDisplay;
 
         public MainForm()
         {
             InitializeComponent();
+            this.WindowState = FormWindowState.Maximized;
+
+
+            pictureBox1.Dock = DockStyle.Fill;
+            pictureBox2.Dock = DockStyle.Fill;
+
+            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBox2.SizeMode = PictureBoxSizeMode.Zoom;
+
             segmentPixels = new Dictionary<int, List<Point>>();
             selectedLabels = new HashSet<int>();
-            this.Controls.Add(button3);
-            button3.Click += button3_Click;
+            this.Controls.Add(Button3);
+            Button3.Click += Button3_Click;
 
 
         }
@@ -78,7 +86,7 @@ namespace ImageTemplate
             Stopwatch timer = Stopwatch.StartNew();
 
 
-            var segmenter = new Segmenter(ImageMatrix, 30000);
+            var segmenter = new Segmenter(ImageMatrix, 35000);
             leaders = segmenter.RunColor();
             originalImageMatrix = ImageMatrix;
             originalImage = RGBPixelToBitmap(originalImageMatrix);
@@ -86,7 +94,7 @@ namespace ImageTemplate
             colorizedSegments = segmenter.Colorize(leaders);
 
             isMerging = false;
-            button3.Text = "Merge Segments";
+            Button3.Text = "Merge Segments";
             mergedLabels.Clear();
             segmentPixels.Clear();
             selectedLabels.Clear();
@@ -97,6 +105,7 @@ namespace ImageTemplate
             long time = timer.ElapsedMilliseconds;
 
             Debug.WriteLine("TIME:" + time);
+            MessageBox.Show("Code Executed in " + time + " :MS");
 
             PopulateSegmentPixels();
 
@@ -115,13 +124,7 @@ namespace ImageTemplate
                     sw.WriteLine(s);
             }
 
-            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
-            saveFileDialog1.Filter = "bmp files (*.bmp)|*.bmp|All files (*.*)|*.*";
-            saveFileDialog1.RestoreDirectory = true;
-            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
-            {
-                pictureBox2.Image.Save(saveFileDialog1.FileName, ImageFormat.Bmp);
-            }
+           
 
         }
 
@@ -145,19 +148,19 @@ namespace ImageTemplate
 
         }
 
-        private void button3_Click(object sender, EventArgs e)
+        private void Button3_Click(object sender, EventArgs e)
         {
             if (!isMerging)
             {
                 isMerging = true;
-                button3.Text = "Show Original";
+                Button3.Text = "Show Original";
                 selectedLabels.Clear();
                 pictureBox2.Cursor = Cursors.Hand;
             }
             else
             {
                 isMerging = false;
-                button3.Text = "Merge Segments";
+                Button3.Text = "Merge Segments";
                 pictureBox2.Cursor = Cursors.Default;
 
                 if (selectedLabels.Count == 0)
@@ -251,6 +254,21 @@ namespace ImageTemplate
 
              ImageOperations.DisplayImage(overlayMatrix,pictureBox2);
         }
-      
+
+        private void txtHeight_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+            saveFileDialog1.Filter = "bmp files (*.bmp)|*.bmp|All files (*.*)|*.*";
+            saveFileDialog1.RestoreDirectory = true;
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                pictureBox2.Image.Save(saveFileDialog1.FileName, ImageFormat.Bmp);
+            }
+        }
     }
 }

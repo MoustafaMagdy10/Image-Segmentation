@@ -62,7 +62,6 @@ namespace ImageTemplate
             });
             return leaders;
         }
-        int comp;
         public int[,] RunColor()
         {
             // Segmentation on R, G, B
@@ -101,10 +100,6 @@ namespace ImageTemplate
                             finalDsu.Union(id, nid, 0);
                         }
 
-                        //if (l[y, x] == l[ny, nx])
-                        //{
-                        //    finalDsu.Union(id, nid, 0);
-                        //}
                     }
                 }
             }
@@ -112,7 +107,6 @@ namespace ImageTemplate
             
 
             var finalLeaders = new int[height, width];
-            //var leaders = new int[height, width];
 
             Parallel.For(0, height, y =>
             {
@@ -126,7 +120,7 @@ namespace ImageTemplate
         }
         public RGBPixel[,] Colorize(int[,] leaders)
         {
-            var rnd = new Random();
+            var rnd = new Random(4);
             var colors = new Dictionary<int, Color>();
 
             int h = leaders.GetLength(0);
