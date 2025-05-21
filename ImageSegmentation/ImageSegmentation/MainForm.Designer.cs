@@ -1,3 +1,5 @@
+using System;
+
 namespace ImageTemplate
 {
     partial class MainForm
@@ -246,9 +248,9 @@ namespace ImageTemplate
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(1244, 676);
+            this.button3.Location = new System.Drawing.Point(1182, 659);
             this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(75, 55);
+            this.button3.Size = new System.Drawing.Size(127, 65);
             this.button3.TabIndex = 17;
             this.button3.Text = "button3";
             this.button3.UseVisualStyleBackColor = true;
@@ -289,7 +291,6 @@ namespace ImageTemplate
 
         }
 
-        #endregion
 
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.PictureBox pictureBox2;
@@ -310,4 +311,4 @@ namespace ImageTemplate
         private System.Windows.Forms.Button button3;
     }
 }
-
+#endregion

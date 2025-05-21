@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -61,21 +62,6 @@ namespace ImageTemplate
                 Console.WriteLine(ImageMatrix.ToString());
             }
 
-            var st = new HashSet<int>();
-            for (int i = 0; i < ImageMatrix.GetLength(0); i++)
-            {
-                for (int j = 0; j < ImageMatrix.GetLength(1); j++)
-                {
-
-                    st.Add(ImageMatrix[i, j].red);
-
-
-                }
-            }
-            foreach (var i in st)
-            {
-                Debug.WriteLine(i);
-            }
             txtWidth.Text = ImageOperations.GetWidth(ImageMatrix).ToString();
             txtHeight.Text = ImageOperations.GetHeight(ImageMatrix).ToString();
         }
@@ -86,7 +72,7 @@ namespace ImageTemplate
         {
             double sigma = double.Parse(txtGaussSigma.Text);
             int maskSize = (int)nudMaskSize.Value;
-            //ImageMatrix = ImageOperations.GaussianFilter1D(ImageMatrix, maskSize, sigma);
+            ImageMatrix = ImageOperations.GaussianFilter1D(ImageMatrix, maskSize, sigma);
 
 
             Stopwatch timer = Stopwatch.StartNew();
@@ -98,30 +84,13 @@ namespace ImageTemplate
             originalImage = RGBPixelToBitmap(originalImageMatrix);
 
             colorizedSegments = segmenter.Colorize(leaders);
-            ImageOperations.DisplayImage(colorizedSegments, pictureBox2);
 
-
-
-            currentDisplay = RGBPixelToBitmap(colorizedSegments);
-            pictureBox2.Image = currentDisplay;
-            // mergedLabels.Clear();
             isMerging = false;
             button3.Text = "Merge Segments";
             mergedLabels.Clear();
             segmentPixels.Clear();
             selectedLabels.Clear();
-            for (int y = 0; y < leaders.GetLength(0); y++)
-            {
-                for (int x = 0; x < leaders.GetLength(1); x++)
-                {
-                    int label = leaders[y, x];
-                    if (!segmentPixels.ContainsKey(label))
-                        segmentPixels[label] = new List<Point>();
-                    segmentPixels[label].Add(new Point(x, y));
-                }
-            }
-            var ImageMatrix2 = segmenter.Colorize(leaders);
-
+            
             var (count, sizes) = segmenter.GetStats(leaders);
             timer.Stop();
 
@@ -129,10 +98,11 @@ namespace ImageTemplate
 
             Debug.WriteLine("TIME:" + time);
 
+            PopulateSegmentPixels();
 
-            // ImageOperations.DisplayImage(ImageMatrix2, pictureBox2);
+            ImageOperations.DisplayImage(colorizedSegments, pictureBox2);
 
-            /*
+            
             //put the path you like , like this @"C:\Downloads"
 
             string outputPath = @"C:\Users\moust\source\repos\Image-Segmentation\ImageSegmentation\ImageSegmentation\MyOutput.txt";
@@ -145,30 +115,30 @@ namespace ImageTemplate
                     sw.WriteLine(s);
             }
 
-            string outputImagePath = @"C:\Users\moust\source\repos\Image-Segmentation\ImageSegmentation\ImageSegmentation\SegmentedOutput.png";
-            SaveRGBPixelArrayAsImage(ImageMatrix2, outputImagePath);
-        */
-        }
-
-        private void SaveRGBPixelArrayAsImage(RGBPixel[,] imageMatrix, string filePath)
-        {
-            int height = imageMatrix.GetLength(0);
-            int width = imageMatrix.GetLength(1);
-            Bitmap bmp = new Bitmap(width, height);
-
-            for (int y = 0; y < height; y++)
+            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+            saveFileDialog1.Filter = "bmp files (*.bmp)|*.bmp|All files (*.*)|*.*";
+            saveFileDialog1.RestoreDirectory = true;
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                for (int x = 0; x < width; x++)
-                {
-                    RGBPixel pixel = imageMatrix[y, x];
-                    Color color = Color.FromArgb(pixel.red, pixel.green, pixel.blue);
-                    bmp.SetPixel(x, y, color);
-                }
+                pictureBox2.Image.Save(saveFileDialog1.FileName, ImageFormat.Bmp);
             }
 
-            bmp.Save(filePath, System.Drawing.Imaging.ImageFormat.Png);
         }
 
+        private void PopulateSegmentPixels()
+        {
+            segmentPixels.Clear();
+            for (int y = 0; y < leaders.GetLength(0); y++)
+            {
+                for (int x = 0; x < leaders.GetLength(1); x++)
+                {
+                    int label = leaders[y, x];
+                    if (!segmentPixels.ContainsKey(label))
+                        segmentPixels[label] = new List<Point>();
+                    segmentPixels[label].Add(new Point(x, y));
+                }
+            }
+        }
         private void MainForm_Load(object sender, EventArgs e)
         {
             pictureBox2.MouseClick += pictureBox2_MouseClick;
@@ -192,37 +162,54 @@ namespace ImageTemplate
 
                 if (selectedLabels.Count == 0)
                 {
-                    MessageBox.Show("Select at least 1 segment to show");
                     return;
                 }
+                
+                 
+                var result = ColorizeSelected(leaders, selectedLabels);
 
-
-                Bitmap result = new Bitmap(originalImage.Width, originalImage.Height);
-
-                for (int y = 0; y < result.Height; y++)
-                {
-                    for (int x = 0; x < result.Width; x++)
-                    {
-                        if (selectedLabels.Contains(leaders[y, x]))
-                        {
-
-                            result.SetPixel(x, y, originalImage.GetPixel(x, y));
-                        }
-                        else
-                        {
-                            result.SetPixel(x, y, Color.White);
-                        }
-                    }
-                }
-
-                pictureBox2.Image = result;
+                ImageOperations.DisplayImage(result, pictureBox2);
                 selectedLabels.Clear();
             }
+        }
+        public RGBPixel[,] ColorizeSelected(int[,] leaders, HashSet<int> selectedLabels)
+        {
+           
+            int h = originalImageMatrix.GetLength(0);
+            int w = originalImageMatrix.GetLength(1);
+
+
+
+            RGBPixel[,] mat = new RGBPixel[h, w];
+
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x++)
+                {
+                    if (selectedLabels.Contains(leaders[y, x]))
+                    {
+
+                        mat[y, x].red = originalImageMatrix[y, x].red;
+                        mat[y, x].green = originalImageMatrix[y, x].green;
+                        mat[y, x].blue = originalImageMatrix[y, x].blue;
+                    }
+                    else
+                    {
+                        mat[y, x].red = 255;
+                        mat[y, x].green = 255;
+                        mat[y, x].blue = 255;
+
+                    }
+                }
+            }
+            return mat;
+
+
         }
 
         private void pictureBox2_MouseClick(object sender, MouseEventArgs e)
         {
-            if (!isMerging || originalImage == null || leaders == null)
+            if (!isMerging || originalImageMatrix == null || leaders == null)
                 return;
 
             int imgX = (int)((double)e.X / pictureBox2.Width * originalImage.Width);
@@ -243,47 +230,27 @@ namespace ImageTemplate
 
         private void HighlightSelectedRegions()
         {
-            Bitmap overlay = new Bitmap(currentDisplay.Width, currentDisplay.Height);
+          
+            int height = colorizedSegments.GetLength(0);
+            int width = colorizedSegments.GetLength(1);
+            RGBPixel[,] overlayMatrix = new RGBPixel[height, width];
 
-            using (Graphics g = Graphics.FromImage(overlay))
+            // Copy original
+            for (int y = 0; y < height; y++)
+                for (int x = 0; x < width; x++)
+                    overlayMatrix[y, x] = colorizedSegments[y, x];
+
+            // Apply white highlights to selected regions
+            foreach (int label in selectedLabels)
             {
-
-                g.DrawImage(currentDisplay, 0, 0);
-
-                foreach (int label in selectedLabels)
+                foreach (Point p in segmentPixels[label])
                 {
-                    foreach (Point p in segmentPixels[label])
-                    {
-                        overlay.SetPixel(p.X, p.Y, Color.White);
-                    }
+                    overlayMatrix[p.Y, p.X] = new RGBPixel { red = 255, green = 255, blue = 255 };
                 }
             }
 
-            pictureBox2.Image = overlay;
+             ImageOperations.DisplayImage(overlayMatrix,pictureBox2);
         }
-        private void button2_Click(object sender, EventArgs e)
-        {
-            if (selectedLabels.Count == 0)
-            {
-                MessageBox.Show("Please select at least one region first!");
-                return;
-            }
-            Bitmap result = new Bitmap(originalImage.Width, originalImage.Height);
-
-            for (int y = 0; y < result.Height; y++)
-            {
-                for (int x = 0; x < result.Width; x++)
-                {
-                    result.SetPixel(x, y, selectedLabels.Contains(leaders[y, x])
-                        ? originalImage.GetPixel(x, y)
-                        : Color.Black);
-                }
-            }
-            currentDisplay = result;
-
-            pictureBox2.Image = result;
-            selectedLabels.Clear();
-        }
-
+      
     }
 }

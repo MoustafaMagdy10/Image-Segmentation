@@ -151,6 +151,8 @@ namespace ImageTemplate
 
 
         }
+
+       
         public (int count, List<int> sizes) GetStats(int[,] leaders)
         {
             var freq = new Dictionary<int, int>();
