@@ -92,6 +92,7 @@ Unlike basic region-growing, this method:
 
 ## 🗂️ Project Structure
 
+```
 ImageSegmentation/
 │
 ├── Segmenter.cs             # Core segmentation logic
@@ -101,7 +102,7 @@ ImageSegmentation/
 ├── MainForm.cs              # WinForms UI  
 ├── output.txt               # Segment sizes
 ├── screenshots/             # Sample output images
-
+```
 ---
 ## 💻 How to Use
 
